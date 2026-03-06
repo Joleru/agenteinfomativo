@@ -1,21 +1,17 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { useChat } from "@ai-sdk/react"
-import { DefaultChatTransport } from "ai"
 import { Bot, X, Send, Minus } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { chat } from "@/actions/chat"
+import { CohereResponse, Message } from "@/utils/types/chat"
 
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false)
   const [input, setInput] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
-
-  const { messages, sendMessage, status } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/chat" }),
-  })
-
-  const isLoading = status === "streaming" || status === "submitted"
+  const [messages, setMessages] = useState<Message[]>([])
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -23,12 +19,37 @@ export function ChatWidget() {
     }
   }, [messages])
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!input.trim() || isLoading) return
-    sendMessage({ text: input })
-    setInput("")
+async function handleSendMessage(text: string) {
+  if (!text.trim() || isLoading) return
+  const userMessage: Message = {
+    id: crypto.randomUUID(),
+    role: "user",
+    content: text
   }
+  
+  setMessages(prev => [...prev, userMessage])
+  setInput("")
+  setIsLoading(true)
+  
+  try {
+    const response: CohereResponse = await chat(text)
+    const assistantMessage: Message = {
+      id: crypto.randomUUID(),
+      role: "assistant",
+      content: response.message.content[0].text
+    }
+    setMessages(prev => [...prev, assistantMessage])
+  } catch (error) {
+    console.error(error)
+  } finally {
+    setIsLoading(false)
+  }
+}
+
+async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault()
+  await handleSendMessage(input)
+}
 
   return (
     <>
@@ -104,8 +125,8 @@ export function ChatWidget() {
                   ].map((suggestion) => (
                     <button
                       key={suggestion}
-                      onClick={() => {
-                        sendMessage({ text: suggestion })
+                      onClick={async () => {
+                        await handleSendMessage(suggestion)
                       }}
                       className="rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground transition-colors hover:border-accent/30 hover:bg-secondary"
                     >
@@ -124,18 +145,12 @@ export function ChatWidget() {
                   className={`mb-3 flex ${isUser ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                      isUser
-                        ? "bg-primary text-primary-foreground rounded-br-md"
-                        : "bg-secondary text-secondary-foreground rounded-bl-md"
-                    }`}
+                    className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${isUser
+                      ? "bg-primary text-primary-foreground rounded-br-md"
+                      : "bg-secondary text-secondary-foreground rounded-bl-md"
+                      }`}
                   >
-                    {msg.parts.map((part, i) => {
-                      if (part.type === "text") {
-                        return <span key={i}>{part.text}</span>
-                      }
-                      return null
-                    })}
+                    {msg.content}
                   </div>
                 </div>
               )
