@@ -11,23 +11,36 @@ export const chat = async (message: string) => {
             body: JSON.stringify({
                 messages: [
                     {
-                        role: 'assistant',
+                        role: 'system',
+                        content: 'Eres un asistente de ventas experto en hosting y desarrollo web. Tu objetivo es ayudar a los clientes a elegir entre una página web o una tienda online basándote estrictamente en los documentos proporcionados.'
+                    },
+                    {
+                        role: 'user',
                         content: message,
-                    }
+                    },
+
                 ],
                 model: 'command-r-plus-08-2024',
+                // preamble: "Eres un agente de ventas de hosting. Da respuestas muy cortas y directas basándote únicamente en los documentos proporcionados.",
                 documents: [
-                    {
-                        data: {
-                            agent: 'Da respuestas cortas por favor, almenos en cuanto a informacion.'
-                        }
-                    },
                     {
                         data: {
                             title: "Política de Precios Hosting",
                             snippet: "El precio del hosting se ajusta a los recursos técnicos (CPU, RAM, Almacenamiento). El rango estándar está entre los $10 USD mensuales (VPS básico) hasta los $200 USD mensuales (Servidor dedicado de alto rendimiento)."
                         }
-                    }
+                    },
+                    {
+                        data: {
+                            title: "Servicio de Tienda Online (E-commerce)",
+                            snippet: "Nuestras tiendas online incluyen catálogo de productos ilimitado, carrito de compras, integración con pasarelas de pago (Stripe, PayPal, Mercado Pago) y panel de administración de inventario. El precio base es de $500 USD e incluye configuración de envíos y certificado SSL por un año."
+                        }
+                    },
+                    {
+                        data: {
+                            title: "Servicio de Página Web Corporativa",
+                            snippet: "El diseño de página web informativa o corporativa está enfocado en presencia digital y marca. Incluye secciones como 'Inicio', 'Nosotros', 'Servicios' y 'Contacto' con formulario. No incluye funciones de venta directa. El precio inicia desde los $250 USD y el tiempo de entrega es de 7 a 10 días hábiles."
+                        }
+                    },
                 ]
             }),
         });
