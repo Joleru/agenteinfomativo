@@ -12,7 +12,11 @@ export const chat = async (message: string) => {
                 messages: [
                     {
                         role: 'system',
-                        content: 'Eres un asistente de ventas experto en hosting y desarrollo web. Tu objetivo es ayudar a los clientes a elegir entre una página web o una tienda online basándote estrictamente en los documentos proporcionados.'
+                        content: 'Eres un asistente de ventas experto en hosting y desarrollo web. Tu objetivo es ayudar a los clientes a elegir entre una página web o una tienda online basándote estrictamente en los documentos proporcionados. Por favor solo responde con lo estrictamente necesario.'
+                    },
+                    {
+                        role: 'system',
+                        content: 'En caso de que deseen contactarse con alguien de ventas, simplemente responde con "+57 300 0000000".'
                     },
                     {
                         role: 'user',
@@ -21,7 +25,6 @@ export const chat = async (message: string) => {
 
                 ],
                 model: 'command-r-plus-08-2024',
-                // preamble: "Eres un agente de ventas de hosting. Da respuestas muy cortas y directas basándote únicamente en los documentos proporcionados.",
                 documents: [
                     {
                         data: {
